@@ -1,0 +1,37 @@
+.mainPane > VBox {
+    -fx-min-width: 900px;
+    -fx-min-height: 600px;
+    -fx-background-color: #F2F2F2;
+}
+
+.langChoooser {
+    -fx-pref-height: 25px;
+    -fx-pref-width: 100%;
+}
+
+.langChoooser > * {
+    -fx-max-height: 25px;
+    -fx-pref-width: 75px;
+}
+
+ComboBox {
+    -fx-cursor: HAND;
+}
+
+.btn {
+    -fx-cursor: HAND;
+    -fx-font-weight: bold;
+    -fx-pref-height: 40px;
+    -fx-pref-width: 150px;
+    -fx-background-color: #CCCCCC;
+    -fx-background-insets: 1;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-border-color: #000000;
+}
+
+.btnHelp {
+    -fx-cursor: HAND;
+    -fx-max-height: 25px;
+    -fx-max-width: 20px;
+}

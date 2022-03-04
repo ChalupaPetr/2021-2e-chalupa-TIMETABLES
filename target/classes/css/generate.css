@@ -1,0 +1,53 @@
+.mainPane {
+    -fx-min-width: 900px;
+    -fx-min-height: 600px;
+    -fx-background-color: #F2F2F2;
+}
+
+.btn {
+    -fx-cursor: HAND;
+    -fx-font-weight: bold;
+    -fx-pref-height: 25px;
+    -fx-min-width: 100px;
+    -fx-background-color: #CCCCCC;
+    -fx-background-insets: 1;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-border-color: #000000;
+}
+
+ComboBox {
+    -fx-cursor: HAND;
+    -fx-pref-width: 150px;
+}
+
+.ttTable {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: black;
+    -fx-border-width: 2px 2px 1px 2px;
+}
+
+.ttTable > * {
+    -fx-border-color: black;
+    -fx-border-width: 0px 1px 1px 0px;
+    -fx-alignment: CENTER;
+}
+
+.ttTable > VBox > VBox > HBox {
+    -fx-max-height: 10px;
+    -fx-alignment: TOP_CENTER;
+    -fx-spacing: 10;
+}
+
+.ttTable > VBox > VBox > HBox > Label {
+    -fx-font-size: 9px;
+}
+
+.ttTable > VBox > VBox {
+    -fx-alignment: TOP_CENTER;
+}
+
+.ttTable > VBox > VBox > Label {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
