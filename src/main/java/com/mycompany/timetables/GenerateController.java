@@ -5,11 +5,13 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import org.controlsfx.control.ToggleSwitch;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,6 +28,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -37,12 +40,18 @@ import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -52,24 +61,24 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
+import javafx.util.converter.IntegerStringConverter;
 
 /**
  * @author chalu
  */
 public class GenerateController implements Initializable {
 
-    // Observable Lists 
+    // Observable Lists
     private ObservableList<Class> classes = FXCollections.observableArrayList(new ArrayList<>());
     private ObservableList<Classroom> classrooms = FXCollections.observableArrayList(new ArrayList<>());
     private ObservableList<Subject> subjects = FXCollections.observableArrayList(new ArrayList<>());
 
     @FXML
     TabPane mainTabPane;
-    @FXML
-    TabPane genTabPane;
     // FXML fields for the Timetables Tab
     @FXML
-    ComboBox ttTypeSelect;
+    ComboBox<String> ttSelect;
     @FXML
     ComboBox ttSelectSpecific;
     @FXML
@@ -86,7 +95,7 @@ public class GenerateController implements Initializable {
     @FXML
     TableColumn<Class, String> genClassesTableName;
     @FXML
-    ComboBox genClassesAddYear;
+    Spinner<Integer> genClassesAddYear;
     @FXML
     TextField genClassesAddName;
     @FXML
@@ -102,7 +111,7 @@ public class GenerateController implements Initializable {
     @FXML
     TableColumn<SubjectGroup, Boolean> genClassesEditSubjectsTableTwoHours;
     @FXML
-    TextField genClassesEditSubjectsHours;
+    Spinner<Integer> genClassesEditSubjectsHours;
     @FXML
     ComboBox genClassesEditSubjectsSubject;
     // FXML fields for the Gen - Classrooms Tab
@@ -113,7 +122,9 @@ public class GenerateController implements Initializable {
     @FXML
     TableColumn<Classroom, String> genClassroomsTableName;
     @FXML
-    TextField genClassroomsAddNumber;
+    Spinner<Integer> genClassroomsAddNumber;
+    // @FXML
+    // TextField genClassroomsAddNumber;
     @FXML
     TextField genClassroomsAddName;
     @FXML
@@ -132,7 +143,7 @@ public class GenerateController implements Initializable {
     @FXML
     TableColumn<Subject, String> genSubjectsTableName;
     @FXML
-    TableColumn<Subject, String> genSubjectsTableColor;
+    TableColumn<Subject, Color> genSubjectsTableColor;
     @FXML
     TextField genSubjectsAddName;
     @FXML
@@ -148,17 +159,17 @@ public class GenerateController implements Initializable {
         App.setRoot("homepage");
     }
 
-    //------------------------------------------------------------------------//
+    // ------------------------------------------------------------------------//
     /**
      * Adds new object Class to Observable List classes
      */
     @FXML
     private void addClass() {
-        if (genClassesAddName.getText().isBlank()) {
+        String year = genClassesAddYear.getValue().toString();
+        String name = genClassesAddName.getText(0, 1).toUpperCase();
+        if (name.isBlank()) {
             return;
         }
-        String year = genClassesAddYear.getSelectionModel().getSelectedItem().toString();
-        String name = genClassesAddName.getText(0, 1).toUpperCase();
         //
         Class cNew = new Class(year, name);
         for (Class c : classes) {
@@ -211,34 +222,31 @@ public class GenerateController implements Initializable {
      */
     @FXML
     private void editClassSubjects() {
-        if (genClassesEditSubjectsHours.getText().isBlank() || genClassesEditSubjectsSubject.getItems().isEmpty()) {
+        if (genClassesEditSubjectsSubject.getItems().isEmpty()) {
             return;
         }
-        Subject selectedS = (subjects.filtered(s -> s.equals(genClassesEditSubjectsSubject.getSelectionModel().getSelectedItem()))).get(0);
-        String number = genClassesEditSubjectsHours.getText();
-        if (!number.matches("\\d+")) {
+        int dotation = genClassesEditSubjectsHours.getValue();
+        if (dotation < 0) {
             App.showErrorDialog();
             return;
         }
+        Subject selectedS = (subjects
+                .filtered(s -> s.equals(genClassesEditSubjectsSubject.getSelectionModel().getSelectedItem()))).get(0);
         Class selectedC = (Class) genClassesEditBox.getUserData();
         ArrayList<SubjectGroup> sg = selectedC.getSubjectGroups();
-        //
-        int dotation = Integer.parseInt(number);
-        int totalDotations = dotation;
-        totalDotations = sg.stream().map(group -> group.getDotation()).reduce(totalDotations, Integer::sum);
-        if (dotation <= 0 || totalDotations > 40) {
-            App.showErrorDialog();
-            return;
-        }
         //
         if (!sg.isEmpty()) {
             for (int i = 0; i < sg.size(); i++) {
                 SubjectGroup group = sg.get(i);
                 if (group.getSubjects().size() == 1 && group.getSubjects().get(0).equals(selectedS)) {
-                    group.setDotation(dotation);
+                    if (dotation == 0) {
+                        removeClassSubject(group);
+                    } else {
+                        group.setDotation(dotation);
+                    }
                     break;
                 }
-                if (i == sg.size() - 1) {
+                if (i == sg.size() - 1 && dotation != 0) {
                     sg.add(new SubjectGroup(new ArrayList<Subject>() {
                         {
                             add(selectedS);
@@ -246,12 +254,13 @@ public class GenerateController implements Initializable {
                     }, dotation, false));
                 }
             }
-        } else {
+        } else if (dotation != 0) {
             sg.add(new SubjectGroup(new ArrayList<Subject>() {
                 {
                     add(selectedS);
                 }
             }, dotation, false));
+
         }
         selectedC.setSubjectGroups(sg);
         loadClassSubjects(selectedC);
@@ -278,16 +287,9 @@ public class GenerateController implements Initializable {
      */
     @FXML
     private void joinClassSubjects(ArrayList<SubjectGroup> selectedItems) {
-        if (genClassesEditSubjectsHours.getText().isBlank()) {
-            return;
-        }
         Class c = (Class) genClassesEditBox.getUserData();
         ObservableList<SubjectGroup> sg = FXCollections.observableArrayList(c.getSubjectGroups());
-        String number = genClassesEditSubjectsHours.getText();
-        if (!number.matches("\\d+")) {
-            App.showErrorDialog();
-            return;
-        }
+        String number = genClassesEditSubjectsHours.getValue().toString();
         int dotation = Integer.parseInt(number);
         int maxDotation = selectedItems.get(0).getDotation();
         ArrayList<Subject> joinedSubjects = new ArrayList<>();
@@ -355,21 +357,17 @@ public class GenerateController implements Initializable {
         }
     }
 
-    //------------------------------------------------------------------------//
+    // ------------------------------------------------------------------------//
     /**
      * Adds new object Classroom to Observable List classrooms
      */
     @FXML
     private void addClassroom() {
-        if (genClassroomsAddNumber.getText().isBlank() || genClassroomsAddName.getText().isBlank()) {
-            return;
-        }
-        String number = genClassroomsAddNumber.getText();
-        if (!number.matches("\\d+")) {
-            App.showErrorDialog();
-            return;
-        }
+        String number = genClassroomsAddNumber.getValue().toString();
         String name = genClassroomsAddName.getText();
+        if (name.isBlank()) {
+            return;
+        }
         //
         Classroom crNew = new Classroom(number, name);
         for (Classroom cr : classrooms) {
@@ -386,16 +384,13 @@ public class GenerateController implements Initializable {
      * @param selected - Selected object Classroom
      */
     private void removeClassroom(Classroom selected) {
-        if (selected != null) {
-            if (!App.showConfirmationDialog()) {
-                return;
-            }
-        } else {
+        if (selected == null || !App.showConfirmationDialog()) {
             return;
         }
         classrooms.remove(selected);
         //
-        if (genClassroomsEditSubjectsBox.getUserData() != null && genClassroomsEditSubjectsBox.getUserData().equals(selected)) {
+        if (genClassroomsEditSubjectsBox.getUserData() != null
+                && genClassroomsEditSubjectsBox.getUserData().equals(selected)) {
             genClassroomsEditSubjectsBox.setVisible(false);
             genClassroomsEditSubjectsBox.setUserData(null);
             genClassroomsEditSubjectsLabel.setText("");
@@ -421,10 +416,12 @@ public class GenerateController implements Initializable {
      */
     @FXML
     private void addClassroomSubject() {
-        if (! !genClassroomsEditSubjectsSubject.getItems().isEmpty()) {
+        if (genClassroomsEditSubjectsSubject.getItems().isEmpty()) {
             return;
         }
-        Subject selectedS = (subjects.filtered(s -> s.equals(genClassroomsEditSubjectsSubject.getSelectionModel().getSelectedItem()))).get(0);
+        Subject selectedS = (subjects
+                .filtered(s -> s.equals(genClassroomsEditSubjectsSubject.getSelectionModel().getSelectedItem())))
+                .get(0);
         //
         Classroom selectedCr = (Classroom) genClassroomsEditSubjectsBox.getUserData();
         ArrayList<Subject> ps = selectedCr.getProhibitedSubjects();
@@ -436,17 +433,17 @@ public class GenerateController implements Initializable {
         loadClassroomSubjects(selectedCr);
     }
 
-    //------------------------------------------------------------------------//
+    // ------------------------------------------------------------------------//
     /**
      * Adds new object Subject to Observable List subjects
      */
     @FXML
     private void addSubject() {
-        if (genSubjectsAddName.getText().isBlank()) {
-            return;
-        }
         String name = genSubjectsAddName.getText();
         Color color = genSubjectsAddColor.getValue().brighter().desaturate();
+        if (name.isBlank()) {
+            return;
+        }
         //
         Subject sNew = new Subject(name, color);
         for (Subject s : subjects) {
@@ -481,7 +478,8 @@ public class GenerateController implements Initializable {
             ArrayList<Subject> ps = cr.getProhibitedSubjects();
             ps.remove(selected);
             cr.setProhibitedSubjects(ps);
-            if (genClassroomsEditSubjectsBox.getUserData() != null && genClassroomsEditSubjectsBox.getUserData().equals(cr)) {
+            if (genClassroomsEditSubjectsBox.getUserData() != null
+                    && genClassroomsEditSubjectsBox.getUserData().equals(cr)) {
                 loadClassroomSubjects(cr);
             }
         });
@@ -491,7 +489,7 @@ public class GenerateController implements Initializable {
      * Edits color of selcted object Subject
      *
      * @param selected - Selected object Subject
-     * @param color - New color
+     * @param color    - New color
      */
     private void editSubjectColor(Subject selected, Color color) {
         color = color.brighter().desaturate();
@@ -499,7 +497,7 @@ public class GenerateController implements Initializable {
         genSubjectsTable.refresh();
     }
 
-    //------------------------------------------------------------------------//
+    // ------------------------------------------------------------------------//
     /**
      * Generates timetable for all objects Class and Classroom
      */
@@ -562,7 +560,9 @@ public class GenerateController implements Initializable {
                         HashMap<Subject, Classroom> posCrs = new HashMap<>();
                         for (Subject posS : currentGroup.getSubjects()) {
                             for (Classroom posCr : posClassrooms) {
-                                if (posCr.getTimetable().get(y).get(x) != null || posCr.getProhibitedSubjects().contains(posS) || posCrs.containsValue(posCr)) {
+                                if (posCr.getTimetable().get(y).get(x) != null
+                                        || posCr.getProhibitedSubjects().contains(posS)
+                                        || posCrs.containsValue(posCr)) {
                                     continue;
                                 }
                                 posCrs.put(posS, posCr);
@@ -584,7 +584,8 @@ public class GenerateController implements Initializable {
                                 sg.remove(currentGroup);
                             } else {
                                 currentGroup.setDotation(d);
-                                if (currentGroup.isTwoHours() && !currentGroup.equals(preLastGroup) && !currentGroup.equals(lastGroup) && x < hours - 1) {
+                                if (currentGroup.isTwoHours() && !currentGroup.equals(preLastGroup)
+                                        && !currentGroup.equals(lastGroup) && x < hours - 1) {
                                     prefNextCr.addAll(currentCrs.values());
                                     prefNextGroup = currentGroup;
                                 }
@@ -602,7 +603,6 @@ public class GenerateController implements Initializable {
             c.setTimetable(timetable);
         });
         //
-        genTabPane.getSelectionModel().selectFirst();
         mainTabPane.getSelectionModel().selectFirst();
         ttTable.setVisible(false);
     }
@@ -619,19 +619,24 @@ public class GenerateController implements Initializable {
         ttTableDesc.setText(ttSelectSpecific.getSelectionModel().getSelectedItem().toString());
         //
         ArrayList<ArrayList<TimetableHour>> timetable;
-        switch (ttTypeSelect.getSelectionModel().getSelectedIndex()) {
+        switch (ttSelect.getSelectionModel().getSelectedIndex()) {
             case 0:
-                timetable = (classes.filtered(c -> c.toString().equals(ttSelectSpecific.getSelectionModel().getSelectedItem().toString()))).get(0).getTimetable();
+                timetable = (classes.filtered(
+                        c -> c.toString().equals(ttSelectSpecific.getSelectionModel().getSelectedItem().toString())))
+                        .get(0).getTimetable();
                 break;
             case 1:
-                timetable = (classrooms.filtered(c -> c.toString().equals(ttSelectSpecific.getSelectionModel().getSelectedItem().toString()))).get(0).getTimetable();
+                timetable = (classrooms.filtered(
+                        c -> c.toString().equals(ttSelectSpecific.getSelectionModel().getSelectedItem().toString())))
+                        .get(0).getTimetable();
                 break;
             default:
                 return;
         }
-        if (!timetable.isEmpty()) {
+        if (timetable != null && !timetable.isEmpty()) {
             ttTable.setVisible(true);
-            ttTable.getChildren().removeIf(ch -> GridPane.getColumnIndex(ch) != null && GridPane.getRowIndex(ch) != null);
+            ttTable.getChildren()
+                    .removeIf(ch -> GridPane.getColumnIndex(ch) != null && GridPane.getRowIndex(ch) != null);
             //
             int days = ttTable.getRowCount() - 1;
             int hours = ttTable.getColumnCount() - 1;
@@ -646,6 +651,7 @@ public class GenerateController implements Initializable {
                             VBox vboxData = new VBox();
                             vboxData.setUserData(s.getColor());
                             VBox.setVgrow(vboxData, Priority.ALWAYS);
+                            //
                             HBox hboxData = new HBox();
                             Label lClass = new Label(hour.getParticipantClass().toString());
                             Label lClassroom = new Label(hour.getClassrooms().get(s).toString());
@@ -681,19 +687,27 @@ public class GenerateController implements Initializable {
     private void toggleTimetableColors() {
         for (Integer row = 0; row < ttTable.getRowCount(); row++) {
             for (Node ch : ttTable.getChildren()) {
-                if ((Objects.equals(GridPane.getRowIndex(ch), row) || (GridPane.getRowIndex(ch) == null && row == 0)) && (ch.getId() != null && ch.getId().equals("data"))) {
+                if ((Objects.equals(GridPane.getRowIndex(ch), row) || (GridPane.getRowIndex(ch) == null && row == 0))
+                        && (ch.getId() != null && ch.getId().equals("data"))) {
                     VBox vboxWrapper = (VBox) ch;
                     for (Node wrapperCh : vboxWrapper.getChildren()) {
                         VBox vboxData = (VBox) wrapperCh;
                         Color color = ttBtnToggleColors.isSelected() ? (Color) vboxData.getUserData() : Color.WHITE;
-                        vboxData.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
+                        vboxData.setBackground(
+                                new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
+                        //
+                        String textFill = blackOrWhiteText(color).equals(Color.BLACK) ? "BLACK" : "WHITE";
+                        vboxData.getChildren().get(1).setStyle("-fx-text-fill: " + textFill + ";");
+                        ((HBox) vboxData.getChildren().get(0)).getChildren().forEach(child -> {
+                            child.setStyle("-fx-text-fill: " + textFill + ";");
+                        });
                     }
                 }
             }
         }
     }
 
-    //------------------------------------------------------------------------//
+    // ------------------------------------------------------------------------//
     /**
      * Exports timetable of selected object Class or object Classroom
      */
@@ -707,15 +721,19 @@ public class GenerateController implements Initializable {
         fileChooser.setInitialFileName("Timetable" + ".pdf");
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PDF File", "*.pdf"));
         //
-        try ( FileOutputStream outS = new FileOutputStream(fileChooser.showSaveDialog(App.stage))) {
+        try (FileOutputStream outS = new FileOutputStream(fileChooser.showSaveDialog(App.stage))) {
             Document pdf = new Document();
             PdfWriter.getInstance(pdf, outS);
             pdf.open();
             //
+            final BaseFont baseFont = BaseFont.createFont("src/main/resources/fonts/Arimo.ttf", BaseFont.IDENTITY_H,
+                    BaseFont.EMBEDDED);
+            //
             PdfPTable table = new PdfPTable(ttTable.getColumnCount());
             for (Integer row = 0; row < ttTable.getRowCount(); row++) {
                 for (Node ch : ttTable.getChildren()) {
-                    if (Objects.equals(GridPane.getRowIndex(ch), row) || (GridPane.getRowIndex(ch) == null && row == 0)) {
+                    if (Objects.equals(GridPane.getRowIndex(ch), row)
+                            || (GridPane.getRowIndex(ch) == null && row == 0)) {
                         if (ch.getId() != null && ch.getId().equals("data")) {
                             VBox vboxWrapper = (VBox) ch;
                             PdfPTable wrapperTable = new PdfPTable(1);
@@ -725,28 +743,29 @@ public class GenerateController implements Initializable {
                                 Label lClass = (Label) hbox.getChildren().get(0);
                                 Label lClassroom = (Label) hbox.getChildren().get(1);
                                 Label lSubject = (Label) vboxData.getChildren().get(1);
-                                Font f6 = new Font(BaseFont.createFont("src/main/resources/fonts/Arimo.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 6);
-                                Font f12b = new Font(BaseFont.createFont("src/main/resources/fonts/Arimo.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 12, Font.BOLD);
-                                Color color = ttBtnToggleColors.isSelected() ? (Color) vboxData.getUserData() : Color.WHITE;
-                                BaseColor bgColor = new BaseColor((float) color.getRed(), (float) color.getGreen(), (float) color.getBlue());
+                                //
+                                Color color = ttBtnToggleColors.isSelected() ? (Color) vboxData.getUserData()
+                                        : Color.WHITE;
+                                BaseColor bgColor = new BaseColor((float) color.getRed(), (float) color.getGreen(),
+                                        (float) color.getBlue());
+                                BaseColor textFill = blackOrWhiteText(color).equals(Color.BLACK) ? BaseColor.BLACK
+                                        : BaseColor.WHITE;
+                                Font f6 = new Font(baseFont, 6, Font.NORMAL, textFill);
+                                Font f12b = new Font(baseFont, 12, Font.BOLD, textFill);
                                 //
                                 PdfPCell cClass = new PdfPCell(new Phrase(lClass.getText(), f6));
                                 cClass.setBorder(0);
                                 cClass.setHorizontalAlignment(Element.ALIGN_LEFT);
                                 cClass.setBackgroundColor(bgColor);
-                                //
                                 PdfPCell cClassroom = new PdfPCell(new Phrase(lClassroom.getText(), f6));
                                 cClassroom.setBorder(0);
                                 cClassroom.setHorizontalAlignment(Element.ALIGN_CENTER);
                                 cClassroom.setBackgroundColor(bgColor);
-
-                                //
                                 PdfPCell cSubject = new PdfPCell(new Phrase(lSubject.getText(), f12b));
                                 cSubject.setBorder(0);
                                 cSubject.setHorizontalAlignment(Element.ALIGN_CENTER);
                                 cSubject.setBackgroundColor(bgColor);
                                 cSubject.setColspan(2);
-                                //
                                 PdfPTable dataTable = new PdfPTable(2);
                                 dataTable.addCell(cClass);
                                 dataTable.addCell(cClassroom);
@@ -759,8 +778,8 @@ public class GenerateController implements Initializable {
                         } else {
                             VBox vbox = (VBox) ch;
                             Label l = (Label) vbox.getChildren().get(0);
-                            Font f12 = new Font(BaseFont.createFont("src/main/resources/fonts/Arimo.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 12);
                             //
+                            Font f12 = new Font(baseFont, 12, Font.NORMAL, BaseColor.BLACK);
                             PdfPCell c = new PdfPCell(new Phrase(l.getText(), f12));
                             c.setBorder(0);
                             c.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -774,7 +793,6 @@ public class GenerateController implements Initializable {
                     }
                 }
             }
-            //
             pdf.add(table);
             pdf.close();
         } catch (FileNotFoundException | DocumentException ex) {
@@ -792,11 +810,13 @@ public class GenerateController implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(App.getBundle().getString("app.fileChooser.save"));
         fileChooser.setInitialFileName("TimetablesConf" + ".conf");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Conf Files", "*.conf", "*.dat", "*.ser", "*.bin"));
-        App.ConfFile = fileChooser.showSaveDialog(App.stage);
+        fileChooser.getExtensionFilters()
+                .addAll(new FileChooser.ExtensionFilter("Conf Files", "*.conf", "*.dat", "*.ser", "*.bin"));
+        App.confFile = fileChooser.showSaveDialog(App.stage);
         //
-        if (App.ConfFile != null) {
-            try ( FileOutputStream fOut = new FileOutputStream(App.ConfFile);  ObjectOutputStream outS = new ObjectOutputStream(fOut)) {
+        if (App.confFile != null) {
+            try (FileOutputStream fOut = new FileOutputStream(App.confFile);
+                    ObjectOutputStream outS = new ObjectOutputStream(fOut)) {
                 outS.writeObject(new ArrayList<>(classes));
                 outS.writeObject(new ArrayList<>(classrooms));
                 outS.writeObject(new ArrayList<>(subjects));
@@ -806,14 +826,23 @@ public class GenerateController implements Initializable {
                 System.out.println(ex);
             }
         }
-        genTabPane.getSelectionModel().selectFirst();
     }
 
-    //------------------------------------------------------------------------//
+    // ------------------------------------------------------------------------//
+    public Color blackOrWhiteText(Color color) {
+        int brightness = (int) Math
+                .round((color.getRed() * 255 * 299) + (color.getGreen() * 255 * 587) +
+                        (color.getBlue() * 255 * 114))
+                / 1000;
+        return brightness > 130 ? Color.BLACK : Color.WHITE;
+    }
+
+    // ------------------------------------------------------------------------//
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        if (App.ConfFile != null) {
-            try ( FileInputStream fIn = new FileInputStream(App.ConfFile);  ObjectInputStream inS = new ObjectInputStream(fIn)) {
+        if (App.confFile != null) {
+            try (FileInputStream fIn = new FileInputStream(App.confFile);
+                    ObjectInputStream inS = new ObjectInputStream(fIn)) {
                 classes = FXCollections.observableArrayList((ArrayList<Class>) inS.readObject());
                 classrooms = FXCollections.observableArrayList((ArrayList<Classroom>) inS.readObject());
                 subjects = FXCollections.observableArrayList((ArrayList<Subject>) inS.readObject());
@@ -831,10 +860,11 @@ public class GenerateController implements Initializable {
     }
 
     private void initTimetables(ResourceBundle rb) {
-        ttTypeSelect.getItems().addAll(rb.getString("tt.select.classes"), rb.getString("tt.select.classrooms"));
-        ttTypeSelect.getSelectionModel().selectFirst();
-        ttTypeSelect.setOnAction((e) -> {
-            int selected = ttTypeSelect.getSelectionModel().getSelectedIndex();
+        ttSelect.getItems().addAll(rb.getString("gen.tt.select.classes"),
+                rb.getString("gen.tt.select.classrooms"));
+        ttSelect.getSelectionModel().selectFirst();
+        ttSelect.setOnAction((e) -> {
+            int selected = ttSelect.getSelectionModel().getSelectedIndex();
             switch (selected) {
                 case 0:
                     ttSelectSpecific.setItems(classes);
@@ -845,23 +875,24 @@ public class GenerateController implements Initializable {
             }
             ttSelectSpecific.getSelectionModel().selectFirst();
         });
-        ttTypeSelect.fireEvent(new ActionEvent());
+
+        ttSelect.fireEvent(new ActionEvent());
     }
 
     private void initClasses(ResourceBundle rb) {
-        classes.addListener((ListChangeListener) (change) -> {
+        classes.addListener((ListChangeListener<Class>) (change) -> {
             genClassesTable.refresh();
-            ttTypeSelect.fireEvent(new ActionEvent());
+            ttSelect.fireEvent(new ActionEvent());
         });
         //
         genClassesTableYear.setCellValueFactory(new PropertyValueFactory<>("year"));
         genClassesTableName.setCellValueFactory(new PropertyValueFactory<>("name"));
         ContextMenu cm = new ContextMenu();
-        MenuItem iEditSubjects = new MenuItem(rb.getString("gen.gen.classes.table.btnEditSubjects"));
+        MenuItem iEditSubjects = new MenuItem(rb.getString("gen.classes.table.btnEditSubjects"));
         iEditSubjects.setOnAction((e) -> {
             loadClassSubjects(genClassesTable.getSelectionModel().getSelectedItem());
         });
-        MenuItem iRemove = new MenuItem(rb.getString("gen.gen.classes.table.btnRemove"));
+        MenuItem iRemove = new MenuItem(rb.getString("gen.classes.table.btnRemove"));
         iRemove.setOnAction((e) -> {
             removeClass(genClassesTable.getSelectionModel().getSelectedItem());
         });
@@ -869,34 +900,46 @@ public class GenerateController implements Initializable {
         genClassesTable.setContextMenu(cm);
         genClassesTable.setItems(classes);
         //
-        genClassesAddYear.getItems().addAll("1", "2", "3", "4", "5", "6", "7", "8", "9");
-        genClassesAddYear.getSelectionModel().selectFirst();
+        genClassesAddYear.setValueFactory(new IntegerSpinnerValueFactory(1, 9, 1));
+        genClassesAddYear.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
+            if (!newValue.matches("\\d+")) {
+                genClassesAddYear.getEditor().setText(oldValue);
+            } else {
+                try {
+                    Integer.parseInt(newValue);
+                } catch (NumberFormatException ex) {
+                    genClassesAddYear.getEditor().setText(oldValue);
+                }
+            }
+        });
         //
         genClassesEditSubjectsTableName.setCellValueFactory(new PropertyValueFactory<>("subjectsString"));
         genClassesEditSubjectsTableHours.setCellValueFactory(new PropertyValueFactory<>("dotation"));
         genClassesEditSubjectsTableTwoHours.setCellValueFactory(new PropertyValueFactory<>("twoHours"));
         genClassesEditSubjectsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         ContextMenu cmSI = new ContextMenu();
-        MenuItem iEditTwoHoursSI = new MenuItem(rb.getString("gen.gen.classes.table.btnEditTwoHours"));
+        MenuItem iEditTwoHoursSI = new MenuItem(rb.getString("gen.classes.table.subjects.btnEditTwoHours"));
         iEditTwoHoursSI.setOnAction((e) -> {
-            ObservableList<SubjectGroup> selectedItems = genClassesEditSubjectsTable.getSelectionModel().getSelectedItems();
+            ObservableList<SubjectGroup> selectedItems = genClassesEditSubjectsTable.getSelectionModel()
+                    .getSelectedItems();
             selectedItems.forEach(item -> {
                 item.setTwoHours(!item.isTwoHours());
             });
             genClassesEditSubjectsTable.refresh();
         });
-        MenuItem iJoinGroupsSI = new MenuItem(rb.getString("gen.gen.classes.table.btnJoin"));
+        MenuItem iJoinGroupsSI = new MenuItem(rb.getString("gen.classes.table.subjects.btnJoin"));
         iJoinGroupsSI.setOnAction((e) -> {
-            ObservableList<SubjectGroup> selectedItems = genClassesEditSubjectsTable.getSelectionModel().getSelectedItems();
+            ObservableList<SubjectGroup> selectedItems = genClassesEditSubjectsTable.getSelectionModel()
+                    .getSelectedItems();
             if (selectedItems.size() > 1) {
                 joinClassSubjects(new ArrayList<>(selectedItems));
             }
         });
-        MenuItem iSplitGroupsSI = new MenuItem(rb.getString("gen.gen.classes.table.btnSplit"));
+        MenuItem iSplitGroupsSI = new MenuItem(rb.getString("gen.classes.table.subjects.btnSplit"));
         iSplitGroupsSI.setOnAction((e) -> {
             splitClassSubjects(genClassesEditSubjectsTable.getSelectionModel().getSelectedItem());
         });
-        MenuItem iRemoveSI = new MenuItem(rb.getString("gen.gen.classes.table.btnRemove"));
+        MenuItem iRemoveSI = new MenuItem(rb.getString("gen.classes.table.subjects.btnRemove"));
         iRemoveSI.setOnAction((e) -> {
             removeClassSubject(genClassesEditSubjectsTable.getSelectionModel().getSelectedItem());
         });
@@ -904,22 +947,35 @@ public class GenerateController implements Initializable {
         genClassesEditSubjectsTable.setContextMenu(cmSI);
         genClassesEditSubjectsSubject.setItems(subjects);
         genClassesEditSubjectsSubject.getSelectionModel().selectFirst();
+        //
+        genClassesEditSubjectsHours.setValueFactory(new IntegerSpinnerValueFactory(0, Integer.MAX_VALUE, 1));
+        genClassesEditSubjectsHours.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
+            if (!newValue.matches("\\d+")) {
+                genClassesEditSubjectsHours.getEditor().setText(oldValue);
+            } else {
+                try {
+                    Integer.parseInt(newValue);
+                } catch (NumberFormatException ex) {
+                    genClassesEditSubjectsHours.getEditor().setText(oldValue);
+                }
+            }
+        });
     }
 
     private void initClassrooms(ResourceBundle rb) {
-        classrooms.addListener((ListChangeListener) (change) -> {
+        classrooms.addListener((ListChangeListener<Classroom>) (change) -> {
             genClassroomsTable.refresh();
-            ttTypeSelect.fireEvent(new ActionEvent());
+            ttSelect.fireEvent(new ActionEvent());
         });
         //
         genClassroomsTableNumber.setCellValueFactory(new PropertyValueFactory<>("number"));
         genClassroomsTableName.setCellValueFactory(new PropertyValueFactory<>("name"));
         ContextMenu cm = new ContextMenu();
-        MenuItem iEditSubjects = new MenuItem(rb.getString("gen.gen.classroooms.table.btnEditSubjects"));
+        MenuItem iEditSubjects = new MenuItem(rb.getString("gen.classroooms.table.btnEditSubjects"));
         iEditSubjects.setOnAction((e) -> {
             loadClassroomSubjects(genClassroomsTable.getSelectionModel().getSelectedItem());
         });
-        MenuItem iRemove = new MenuItem(rb.getString("gen.gen.classrooms.table.btnRemove"));
+        MenuItem iRemove = new MenuItem(rb.getString("gen.classrooms.table.btnRemove"));
         iRemove.setOnAction((e) -> {
             removeClassroom(genClassroomsTable.getSelectionModel().getSelectedItem());
         });
@@ -927,10 +983,23 @@ public class GenerateController implements Initializable {
         genClassroomsTable.setContextMenu(cm);
         genClassroomsTable.setItems(classrooms);
         //
+        genClassroomsAddNumber.setValueFactory(new IntegerSpinnerValueFactory(0, Integer.MAX_VALUE, 0));
+        genClassesAddYear.getEditor().textProperty().addListener((obs, oldValue, newValue) -> {
+            if (!newValue.matches("\\d+")) {
+                genClassesAddYear.getEditor().setText(oldValue);
+            } else {
+                try {
+                    Integer.parseInt(newValue);
+                } catch (NumberFormatException ex) {
+                    genClassesAddYear.getEditor().setText(oldValue);
+                }
+            }
+        });
+        //
         genClassroomsEditSubjectsTableName.setCellValueFactory(new PropertyValueFactory<>("name"));
         genClassroomsEditSubjectsSubject.getSelectionModel().selectFirst();
         ContextMenu cmS = new ContextMenu();
-        MenuItem iRemoveS = new MenuItem(App.getBundle().getString("gen.gen.classrooms.table.btnRemove"));
+        MenuItem iRemoveS = new MenuItem(App.getBundle().getString("gen.classrooms.table.subjects.btnRemove"));
         iRemoveS.setOnAction((e) -> {
             if (!App.showConfirmationDialog()) {
                 return;
@@ -948,7 +1017,7 @@ public class GenerateController implements Initializable {
     }
 
     private void initSubjects(ResourceBundle rb) {
-        subjects.addListener((ListChangeListener) (change) -> {
+        subjects.addListener((ListChangeListener<Subject>) (change) -> {
             genSubjectsTable.refresh();
             //
             genClassesEditSubjectsSubject.setItems(subjects);
@@ -961,6 +1030,22 @@ public class GenerateController implements Initializable {
         //
         genSubjectsTableName.setCellValueFactory(new PropertyValueFactory<>("name"));
         genSubjectsTableColor.setCellValueFactory(new PropertyValueFactory<>("color"));
+        genSubjectsTableColor.setCellFactory(new Callback<TableColumn<Subject, Color>, TableCell<Subject, Color>>() {
+            @Override
+            public TableCell<Subject, Color> call(TableColumn<Subject, Color> param) {
+                return new TableCell<Subject, Color>() {
+                    @Override
+                    protected void updateItem(Color color, boolean empty) {
+                        if (!empty) {
+                            setText(color.toString());
+                            setTextFill(blackOrWhiteText(color));
+                            setBackground(
+                                    new Background(new BackgroundFill(color, CornerRadii.EMPTY, new Insets(1.0))));
+                        }
+                    };
+                };
+            }
+        });
         ContextMenu cm = new ContextMenu();
         ColorPicker colorPicker = new ColorPicker();
         colorPicker.setStyle("-fx-background-color: #ffffff;");
@@ -968,7 +1053,7 @@ public class GenerateController implements Initializable {
         iEditColor.setOnAction((e) -> {
             editSubjectColor(genSubjectsTable.getSelectionModel().getSelectedItem(), colorPicker.getValue());
         });
-        MenuItem iRemove = new MenuItem(rb.getString("gen.gen.subjects.table.btnRemove"));
+        MenuItem iRemove = new MenuItem(rb.getString("gen.subjects.table.btnRemove"));
         iRemove.setOnAction((e) -> {
             removeSubject(genSubjectsTable.getSelectionModel().getSelectedItem());
         });

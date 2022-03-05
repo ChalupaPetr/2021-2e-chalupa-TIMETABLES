@@ -24,7 +24,7 @@ public class App extends Application {
     protected static Stage stage;
     protected static Scene scene;
     protected static String bundleLang = "cs"; // The default App language
-    protected static File ConfFile;
+    protected static File confFile;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -77,6 +77,17 @@ public class App extends Application {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle(rb.getString("app.dialog.error.title"));
         alert.setHeaderText(rb.getString("app.dialog.error.text"));
+        alert.show();
+    }
+
+    /**
+     * Shows a new Alert of type ERROR
+     */
+    public static void showInfoDialog() {
+        ResourceBundle rb = getBundle();
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle(rb.getString("app.dialog.info.title"));
+        alert.setHeaderText(rb.getString("app.dialog.info.text"));
         alert.show();
     }
 

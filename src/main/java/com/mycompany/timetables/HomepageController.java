@@ -14,7 +14,7 @@ import javafx.stage.FileChooser;
 public class HomepageController implements Initializable {
 
     @FXML
-    ComboBox langChooser;
+    ComboBox<String> langChooser;
 
     /**
      * Switches to the GENERATE page
@@ -34,8 +34,9 @@ public class HomepageController implements Initializable {
         try {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle(App.getBundle().getString("app.fileChooser.open"));
-            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Conf Files", "*.conf", "*.dat", "*.ser", "*.bin"));
-            App.ConfFile = fileChooser.showOpenDialog(App.stage);
+            fileChooser.getExtensionFilters()
+                    .addAll(new FileChooser.ExtensionFilter("Conf Files", "*.conf", "*.dat", "*.ser", "*.bin"));
+            App.confFile = fileChooser.showOpenDialog(App.stage);
             //
             App.setRoot("generate");
         } catch (IOException ex) {
@@ -61,7 +62,7 @@ public class HomepageController implements Initializable {
      */
     @FXML
     private void showHelp() {
-        System.out.println("TODO");
+        App.showInfoDialog();
     }
 
     @Override

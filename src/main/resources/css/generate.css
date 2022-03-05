@@ -16,6 +16,11 @@
     -fx-border-color: #000000;
 }
 
+.btn:hover,
+#ttBtnToggleColors:selected {
+    -fx-border-color: #CCCCCC;
+}
+
 ComboBox {
     -fx-cursor: HAND;
     -fx-pref-width: 150px;
@@ -27,27 +32,27 @@ ComboBox {
     -fx-border-width: 2px 2px 1px 2px;
 }
 
-.ttTable > * {
+.ttTable>* {
     -fx-border-color: black;
     -fx-border-width: 0px 1px 1px 0px;
     -fx-alignment: CENTER;
 }
 
-.ttTable > VBox > VBox > HBox {
+.ttTable>VBox>VBox>HBox {
     -fx-max-height: 10px;
     -fx-alignment: TOP_CENTER;
     -fx-spacing: 10;
 }
 
-.ttTable > VBox > VBox > HBox > Label {
+.ttTable>VBox>VBox>HBox>Label {
     -fx-font-size: 9px;
 }
 
-.ttTable > VBox > VBox {
+.ttTable>VBox>VBox {
     -fx-alignment: TOP_CENTER;
 }
 
-.ttTable > VBox > VBox > Label {
+.ttTable>VBox>VBox>Label {
     -fx-font-size: 15px;
     -fx-font-weight: bold;
 }

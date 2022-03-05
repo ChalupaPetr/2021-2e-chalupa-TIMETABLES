@@ -1,4 +1,4 @@
-.mainPane > VBox {
+.mainPane>VBox {
     -fx-min-width: 900px;
     -fx-min-height: 600px;
     -fx-background-color: #F2F2F2;
@@ -9,7 +9,7 @@
     -fx-pref-width: 100%;
 }
 
-.langChoooser > * {
+.langChoooser>* {
     -fx-max-height: 25px;
     -fx-pref-width: 75px;
 }
@@ -28,6 +28,10 @@ ComboBox {
     -fx-border-width: 1px;
     -fx-border-radius: 5px;
     -fx-border-color: #000000;
+}
+
+.btn:hover {
+    -fx-border-color: #CCCCCC;
 }
 
 .btnHelp {
