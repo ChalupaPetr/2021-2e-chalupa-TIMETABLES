@@ -81,7 +81,7 @@ public class App extends Application {
     }
 
     /**
-     * Shows a new Alert of type ERROR
+     * Shows a new Alert of type INFORMATION
      */
     public static void showInfoDialog() {
         ResourceBundle rb = getBundle();

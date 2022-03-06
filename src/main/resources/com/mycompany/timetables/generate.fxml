@@ -5,6 +5,7 @@
 <?import javafx.scene.control.ColorPicker?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
@@ -204,7 +205,7 @@
                                           <HBox alignment="TOP_CENTER" spacing="10.0">
                                              <children>
                                                 <Spinner fx:id="genClassesEditSubjectsHours" editable="true" />
-                                                <ComboBox fx:id="genClassesEditSubjectsSubject" />
+                                                <ListView fx:id="genClassesEditSubjectsSubject" prefHeight="100.0" prefWidth="200.0" />
                                              </children>
                                           </HBox>
                                           <Button mnemonicParsing="false" onAction="#editClassSubjects" styleClass="btn" text="%gen.classes.btnConfirm" textAlignment="CENTER" />
@@ -273,7 +274,7 @@
                                        <children>
                                           <HBox alignment="TOP_CENTER" spacing="10.0">
                                              <children>
-                                                <ComboBox fx:id="genClassroomsEditSubjectsSubject" />
+                                                <ListView fx:id="genClassroomsEditSubjectsSubject" prefHeight="100.0" prefWidth="200.0" />
                                              </children>
                                           </HBox>
                                           <Button mnemonicParsing="false" onAction="#addClassroomSubject" styleClass="btn" text="%gen.classrooms.btnConfirm" textAlignment="CENTER" />
