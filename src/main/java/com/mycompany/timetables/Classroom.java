@@ -1,4 +1,4 @@
-package com.mycompany.schedules;
+package com.mycompany.timetables;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,12 +13,12 @@ public class Classroom implements Serializable {
     private final String number;
     private final String name;
     private ArrayList<Subject> prohibitedSubjects = new ArrayList<>();
-    private transient ArrayList<ArrayList<ScheduleHour>> schedule = new ArrayList<>();
+    private transient ArrayList<ArrayList<TimetableHour>> timetable = new ArrayList<>();
 
     public Classroom(String number, String name) {
         this.number = number;
         this.name = name;
-        resetSchedule();
+        resetTimetable();
     }
 
     public String getNumber() {
@@ -33,24 +33,24 @@ public class Classroom implements Serializable {
         return prohibitedSubjects;
     }
 
-    public ArrayList<ArrayList<ScheduleHour>> getSchedule() {
-        return schedule;
+    public ArrayList<ArrayList<TimetableHour>> getTimetable() {
+        return timetable;
     }
 
     public void setProhibitedSubjects(ArrayList<Subject> prohibitedSubjects) {
         this.prohibitedSubjects = prohibitedSubjects;
     }
 
-    public void setSchedule(ArrayList<ArrayList<ScheduleHour>> schedule) {
-        this.schedule = schedule;
+    public void setTimetable(ArrayList<ArrayList<TimetableHour>> timetable) {
+        this.timetable = timetable;
     }
 
-    public void resetSchedule() {
-        schedule = new ArrayList<>();
+    public void resetTimetable() {
+        timetable = new ArrayList<>();
         for (int y = 0; y < 5; y++) {
-            schedule.add(y, new ArrayList<>());
+            timetable.add(y, new ArrayList<>());
             for (int x = 0; x < 8; x++) {
-                schedule.get(y).add(x, null);
+                timetable.get(y).add(x, null);
             }
         }
     }

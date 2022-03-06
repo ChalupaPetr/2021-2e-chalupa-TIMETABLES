@@ -21,11 +21,11 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox styleClass="mainPane" stylesheets="@../../../css/generate.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.schedules.GenerateController">
+<VBox styleClass="mainPane" stylesheets="@../../../css/generate.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.timetables.GenerateController">
    <children>
       <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" tabMinWidth="100.0" VBox.vgrow="ALWAYS">
          <tabs>
-            <Tab closable="false" text="%gen.menu.schedule">
+            <Tab closable="false" text="%gen.menu.timetable">
                <content>
                   <AnchorPane>
                      <children>
@@ -33,19 +33,19 @@
                            <children>
                               <HBox prefWidth="200.0" spacing="20.0">
                                  <children>
-                                    <ComboBox fx:id="schSelect" prefHeight="25.0" prefWidth="216.0" />
-                                    <ComboBox fx:id="schSelectSpecific" />
-                                    <Button mnemonicParsing="false" onAction="#showSchedule" styleClass="btn" text="%gen.sch.btnShow" />
-                                    <ToggleButton fx:id="schBtnToggleColors" mnemonicParsing="false" onAction="#toggleScheduleColors" styleClass="btn" text="%gen.sch.btnColors" />
-                                    <Button layoutX="590.0" layoutY="10.0" mnemonicParsing="false" onAction="#generateSchedule" styleClass="btn" text="%gen.sch.btnGenerate" />
-                                    <Button mnemonicParsing="false" onAction="#exportSchedule" styleClass="btn" text="%gen.sch.btnExportSchedule" />
-                                    <Button layoutX="706.0" layoutY="10.0" mnemonicParsing="false" onAction="#exportConfig" styleClass="btn" text="%gen.sch.btnExportConf" />
+                                    <ComboBox fx:id="ttSelect" prefHeight="25.0" prefWidth="216.0" />
+                                    <ComboBox fx:id="ttSelectSpecific" />
+                                    <Button mnemonicParsing="false" onAction="#showTimetable" styleClass="btn" text="%gen.tt.btnShow" />
+                                    <ToggleButton fx:id="ttBtnToggleColors" mnemonicParsing="false" onAction="#toggleTimetableColors" styleClass="btn" text="%gen.tt.btnColors" />
+                                    <Button layoutX="590.0" layoutY="10.0" mnemonicParsing="false" onAction="#generateTimetable" styleClass="btn" text="%gen.tt.btnGenerate" />
+                                    <Button mnemonicParsing="false" onAction="#exportTimetable" styleClass="btn" text="%gen.tt.btnExportTimetable" />
+                                    <Button layoutX="706.0" layoutY="10.0" mnemonicParsing="false" onAction="#exportConfig" styleClass="btn" text="%gen.tt.btnExportConf" />
                                  </children>
                                  <VBox.margin>
                                     <Insets />
                                  </VBox.margin>
                               </HBox>
-                              <GridPane fx:id="schTable" styleClass="ttTable" visible="false">
+                              <GridPane fx:id="ttTable" styleClass="ttTable" visible="false">
                                  <VBox.margin>
                                     <Insets />
                                  </VBox.margin>
@@ -71,7 +71,7 @@
                                  <children>
                                     <VBox>
                                        <children>
-                                          <Label fx:id="schTableDesc" />
+                                          <Label fx:id="ttTableDesc" />
                                        </children>
                                     </VBox>
                                     <VBox GridPane.columnIndex="1">
@@ -116,27 +116,27 @@
                                     </VBox>
                                     <VBox GridPane.rowIndex="1">
                                        <children>
-                                          <Label text="%gen.sch.table.day.1" />
+                                          <Label text="%gen.tt.table.day.1" />
                                        </children>
                                     </VBox>
                                     <VBox GridPane.rowIndex="2">
                                        <children>
-                                          <Label text="%gen.sch.table.day.2" />
+                                          <Label text="%gen.tt.table.day.2" />
                                        </children>
                                     </VBox>
                                     <VBox GridPane.rowIndex="3">
                                        <children>
-                                          <Label text="%gen.sch.table.day.3" />
+                                          <Label text="%gen.tt.table.day.3" />
                                        </children>
                                     </VBox>
                                     <VBox GridPane.rowIndex="4">
                                        <children>
-                                          <Label text="%gen.sch.table.day.4" />
+                                          <Label text="%gen.tt.table.day.4" />
                                        </children>
                                     </VBox>
                                     <VBox GridPane.rowIndex="5">
                                        <children>
-                                          <Label text="%gen.sch.table.day.5" />
+                                          <Label text="%gen.tt.table.day.5" />
                                        </children>
                                     </VBox>
                                  </children>
