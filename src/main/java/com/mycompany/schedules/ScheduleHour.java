@@ -1,17 +1,17 @@
-package com.mycompany.timetables;
+package com.mycompany.schedules;
 
 import java.util.HashMap;
 
 /**
  * @author chalu
  */
-public class TimetableHour {
+public class ScheduleHour {
 
     private final Class participantClass;
     private final HashMap<Subject, Classroom> classrooms;
     private final SubjectGroup subjects;
 
-    public TimetableHour(Class participantClass, HashMap<Subject, Classroom> classrooms, SubjectGroup subjects) {
+    public ScheduleHour(Class participantClass, HashMap<Subject, Classroom> classrooms, SubjectGroup subjects) {
         this.participantClass = participantClass;
         this.classrooms = classrooms;
         this.subjects = subjects;

@@ -1,4 +1,4 @@
-package com.mycompany.timetables;
+package com.mycompany.schedules;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
@@ -70,17 +70,17 @@ public class GenerateController implements Initializable {
 
     @FXML
     TabPane mainTabPane;
-    // FXML fields for the Timetables Tab
+    // FXML fields for the Schedules Tab
     @FXML
-    ComboBox<String> ttSelect;
+    ComboBox<String> schSelect;
     @FXML
-    ComboBox ttSelectSpecific;
+    ComboBox schSelectSpecific;
     @FXML
-    ToggleButton ttBtnToggleColors;
+    ToggleButton schBtnToggleColors;
     @FXML
-    GridPane ttTable;
+    GridPane schTable;
     @FXML
-    Label ttTableDesc;
+    Label schTableDesc;
     // FXML fields for the Classes Tab
     @FXML
     TableView<Class> genClassesTable;
@@ -508,22 +508,22 @@ public class GenerateController implements Initializable {
 
     // ------------------------------------------------------------------------//
     /**
-     * Generates timetable for all objects Class and Classroom
+     * Generates schedule for all objects Class and Classroom
      */
     @FXML
-    private void generateTimetable() {
-        classrooms.forEach(Classroom::resetTimetable);
+    private void generateSchedule() {
+        classrooms.forEach(Classroom::resetSchedule);
         classes.forEach((Class c) -> {
-            ArrayList<ArrayList<TimetableHour>> timetable = new ArrayList<>();
+            ArrayList<ArrayList<ScheduleHour>> schedule = new ArrayList<>();
             ArrayList<SubjectGroup> sg = new ArrayList<>(c.getSubjectGroups().size());
             c.getSubjectGroups().forEach(group -> {
                 sg.add(new SubjectGroup(group.getSubjects(), group.getDotation(), group.isTwoHours()));
             });
             //
-            int days = ttTable.getRowCount() - 1;
-            int hours = ttTable.getColumnCount() - 1;
+            int days = schTable.getRowCount() - 1;
+            int hours = schTable.getColumnCount() - 1;
             for (int y = 0; y < days; y++) {
-                timetable.add(y, new ArrayList<>());
+                schedule.add(y, new ArrayList<>());
                 SubjectGroup preLastGroup = null;
                 SubjectGroup lastGroup = null;
                 SubjectGroup prefNextGroup = null;
@@ -531,7 +531,7 @@ public class GenerateController implements Initializable {
                 int hourCount = sg.stream().map(group -> group.getDotation()).reduce(0, Integer::sum);
                 int idealHours = (int) Math.ceil((float) hourCount / (float) (days - y));
                 for (int x = 0; x < hours; x++) {
-                    timetable.get(y).add(x, null);
+                    schedule.get(y).add(x, null);
                     SubjectGroup currentGroup;
                     HashMap<Subject, Classroom> currentCrs;
                     //
@@ -569,7 +569,7 @@ public class GenerateController implements Initializable {
                         HashMap<Subject, Classroom> posCrs = new HashMap<>();
                         for (Subject posS : currentGroup.getSubjects()) {
                             for (Classroom posCr : posClassrooms) {
-                                if (posCr.getTimetable().get(y).get(x) != null
+                                if (posCr.getSchedule().get(y).get(x) != null
                                         || posCr.getProhibitedSubjects().contains(posS)
                                         || posCrs.containsValue(posCr)) {
                                     continue;
@@ -582,11 +582,11 @@ public class GenerateController implements Initializable {
 
                         if (currentCrs.size() == currentGroup.getSubjects().size()) {
                             for (Classroom cr : currentCrs.values()) {
-                                ArrayList<ArrayList<TimetableHour>> timetableCr = cr.getTimetable();
-                                timetableCr.get(y).set(x, new TimetableHour(c, currentCrs, currentGroup));
-                                cr.setTimetable(timetableCr);
+                                ArrayList<ArrayList<ScheduleHour>> scheduleCr = cr.getSchedule();
+                                scheduleCr.get(y).set(x, new ScheduleHour(c, currentCrs, currentGroup));
+                                cr.setSchedule(scheduleCr);
                             }
-                            timetable.get(y).set(x, new TimetableHour(c, currentCrs, currentGroup));
+                            schedule.get(y).set(x, new ScheduleHour(c, currentCrs, currentGroup));
 
                             int d = currentGroup.getDotation() - 1;
                             if (d == 0) {
@@ -609,53 +609,53 @@ public class GenerateController implements Initializable {
                     }
                 }
             }
-            c.setTimetable(timetable);
+            c.setSchedule(schedule);
         });
         //
         mainTabPane.getSelectionModel().selectFirst();
-        ttTable.setVisible(false);
+        schTable.setVisible(false);
     }
 
     /**
-     * Displays timetable of selected object Class or Classroom
+     * Displays schedule of selected object Class or Classroom
      */
     @FXML
-    private void showTimetable() {
-        ttTable.setVisible(false);
-        if (ttSelectSpecific.getSelectionModel().getSelectedItem() == null) {
+    private void showSchedule() {
+        schTable.setVisible(false);
+        if (schSelectSpecific.getSelectionModel().getSelectedItem() == null) {
             return;
         }
-        ttTableDesc.setText(ttSelectSpecific.getSelectionModel().getSelectedItem().toString());
+        schTableDesc.setText(schSelectSpecific.getSelectionModel().getSelectedItem().toString());
         //
-        ArrayList<ArrayList<TimetableHour>> timetable;
-        switch (ttSelect.getSelectionModel().getSelectedIndex()) {
+        ArrayList<ArrayList<ScheduleHour>> schedule;
+        switch (schSelect.getSelectionModel().getSelectedIndex()) {
             case 0:
-                timetable = (classes.filtered(
-                        c -> c.toString().equals(ttSelectSpecific.getSelectionModel().getSelectedItem().toString())))
-                        .get(0).getTimetable();
+                schedule = (classes.filtered(
+                        c -> c.toString().equals(schSelectSpecific.getSelectionModel().getSelectedItem().toString())))
+                        .get(0).getSchedule();
                 break;
             case 1:
-                timetable = (classrooms.filtered(
-                        c -> c.toString().equals(ttSelectSpecific.getSelectionModel().getSelectedItem().toString())))
-                        .get(0).getTimetable();
+                schedule = (classrooms.filtered(
+                        c -> c.toString().equals(schSelectSpecific.getSelectionModel().getSelectedItem().toString())))
+                        .get(0).getSchedule();
                 break;
             default:
                 return;
         }
-        if (timetable != null && !timetable.isEmpty()) {
-            ttTable.setVisible(true);
-            ttTable.getChildren()
+        if (schedule != null && !schedule.isEmpty()) {
+            schTable.setVisible(true);
+            schTable.getChildren()
                     .removeIf(ch -> GridPane.getColumnIndex(ch) != null && GridPane.getRowIndex(ch) != null);
             //
-            int days = ttTable.getRowCount() - 1;
-            int hours = ttTable.getColumnCount() - 1;
+            int days = schTable.getRowCount() - 1;
+            int hours = schTable.getColumnCount() - 1;
             for (int y = 0; y < days; y++) {
-                ArrayList<TimetableHour> day = timetable.get(y);
+                ArrayList<ScheduleHour> day = schedule.get(y);
                 for (int x = 0; x < hours; x++) {
                     VBox vboxWrapper = new VBox();
                     vboxWrapper.setId("data");
                     if (x < day.size() && day.get(x) != null) {
-                        TimetableHour hour = day.get(x);
+                        ScheduleHour hour = day.get(x);
                         for (Subject s : hour.getSubjects().getSubjects()) {
                             VBox vboxData = new VBox();
                             vboxData.setUserData(s.getColor());
@@ -682,10 +682,10 @@ public class GenerateController implements Initializable {
                         vboxData.getChildren().addAll(hboxData, lSubject);
                         vboxWrapper.getChildren().add(vboxData);
                     }
-                    ttTable.add(vboxWrapper, x + 1, y + 1);
+                    schTable.add(vboxWrapper, x + 1, y + 1);
                 }
             }
-            toggleTimetableColors();
+            toggleScheduleColors();
         }
     }
 
@@ -693,15 +693,15 @@ public class GenerateController implements Initializable {
      * Toggles colors of objects Subject
      */
     @FXML
-    private void toggleTimetableColors() {
-        for (Integer row = 0; row < ttTable.getRowCount(); row++) {
-            for (Node ch : ttTable.getChildren()) {
+    private void toggleScheduleColors() {
+        for (Integer row = 0; row < schTable.getRowCount(); row++) {
+            for (Node ch : schTable.getChildren()) {
                 if ((Objects.equals(GridPane.getRowIndex(ch), row) || (GridPane.getRowIndex(ch) == null && row == 0))
                         && (ch.getId() != null && ch.getId().equals("data"))) {
                     VBox vboxWrapper = (VBox) ch;
                     for (Node wrapperCh : vboxWrapper.getChildren()) {
                         VBox vboxData = (VBox) wrapperCh;
-                        Color color = ttBtnToggleColors.isSelected() ? (Color) vboxData.getUserData() : Color.WHITE;
+                        Color color = schBtnToggleColors.isSelected() ? (Color) vboxData.getUserData() : Color.WHITE;
                         vboxData.setBackground(
                                 new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
                         //
@@ -718,16 +718,16 @@ public class GenerateController implements Initializable {
 
     // ------------------------------------------------------------------------//
     /**
-     * Exports timetable of selected object Class or object Classroom
+     * Exports schedule of selected object Class or object Classroom
      */
     @FXML
-    private void exportTimetable() {
-        if (!ttTable.isVisible()) {
+    private void exportSchedule() {
+        if (!schTable.isVisible()) {
             return;
         }
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(App.getBundle().getString("app.fileChooser.save"));
-        fileChooser.setInitialFileName("Timetable" + ".pdf");
+        fileChooser.setInitialFileName("Schedule" + ".pdf");
         fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("PDF File", "*.pdf"));
         //
         try (FileOutputStream outS = new FileOutputStream(fileChooser.showSaveDialog(App.stage))) {
@@ -738,9 +738,9 @@ public class GenerateController implements Initializable {
             final BaseFont baseFont = BaseFont.createFont("src/main/resources/fonts/Arimo.ttf", BaseFont.IDENTITY_H,
                     BaseFont.EMBEDDED);
             //
-            PdfPTable table = new PdfPTable(ttTable.getColumnCount());
-            for (Integer row = 0; row < ttTable.getRowCount(); row++) {
-                for (Node ch : ttTable.getChildren()) {
+            PdfPTable table = new PdfPTable(schTable.getColumnCount());
+            for (Integer row = 0; row < schTable.getRowCount(); row++) {
+                for (Node ch : schTable.getChildren()) {
                     if (Objects.equals(GridPane.getRowIndex(ch), row)
                             || (GridPane.getRowIndex(ch) == null && row == 0)) {
                         if (ch.getId() != null && ch.getId().equals("data")) {
@@ -753,7 +753,7 @@ public class GenerateController implements Initializable {
                                 Label lClassroom = (Label) hbox.getChildren().get(1);
                                 Label lSubject = (Label) vboxData.getChildren().get(1);
                                 //
-                                Color color = ttBtnToggleColors.isSelected() ? (Color) vboxData.getUserData()
+                                Color color = schBtnToggleColors.isSelected() ? (Color) vboxData.getUserData()
                                         : Color.WHITE;
                                 BaseColor bgColor = new BaseColor((float) color.getRed(), (float) color.getGreen(),
                                         (float) color.getBlue());
@@ -818,7 +818,7 @@ public class GenerateController implements Initializable {
     private void exportConfig() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(App.getBundle().getString("app.fileChooser.save"));
-        fileChooser.setInitialFileName("TimetablesConf" + ".conf");
+        fileChooser.setInitialFileName("SchedulesConf" + ".conf");
         fileChooser.getExtensionFilters()
                 .addAll(new FileChooser.ExtensionFilter("Conf Files", "*.conf", "*.dat", "*.ser", "*.bin"));
         App.confFile = fileChooser.showSaveDialog(App.stage);
@@ -868,36 +868,36 @@ public class GenerateController implements Initializable {
             }
         }
         //
-        initTimetables(rb);
+        initSchedules(rb);
         initClasses(rb);
         initClassrooms(rb);
         initSubjects(rb);
     }
 
-    private void initTimetables(ResourceBundle rb) {
-        ttSelect.getItems().addAll(rb.getString("gen.tt.select.classes"),
-                rb.getString("gen.tt.select.classrooms"));
-        ttSelect.getSelectionModel().selectFirst();
-        ttSelect.setOnAction((e) -> {
-            int selected = ttSelect.getSelectionModel().getSelectedIndex();
+    private void initSchedules(ResourceBundle rb) {
+        schSelect.getItems().addAll(rb.getString("gen.sch.select.classes"),
+                rb.getString("gen.sch.select.classrooms"));
+        schSelect.getSelectionModel().selectFirst();
+        schSelect.setOnAction((e) -> {
+            int selected = schSelect.getSelectionModel().getSelectedIndex();
             switch (selected) {
                 case 0:
-                    ttSelectSpecific.setItems(classes);
+                    schSelectSpecific.setItems(classes);
                     break;
                 case 1:
-                    ttSelectSpecific.setItems(classrooms);
+                    schSelectSpecific.setItems(classrooms);
                     break;
             }
-            ttSelectSpecific.getSelectionModel().selectFirst();
+            schSelectSpecific.getSelectionModel().selectFirst();
         });
 
-        ttSelect.fireEvent(new ActionEvent());
+        schSelect.fireEvent(new ActionEvent());
     }
 
     private void initClasses(ResourceBundle rb) {
         classes.addListener((ListChangeListener<Class>) (change) -> {
             genClassesTable.refresh();
-            ttSelect.fireEvent(new ActionEvent());
+            schSelect.fireEvent(new ActionEvent());
         });
         //
         genClassesTableYear.setCellValueFactory(new PropertyValueFactory<>("year"));
@@ -985,7 +985,7 @@ public class GenerateController implements Initializable {
     private void initClassrooms(ResourceBundle rb) {
         classrooms.addListener((ListChangeListener<Classroom>) (change) -> {
             genClassroomsTable.refresh();
-            ttSelect.fireEvent(new ActionEvent());
+            schSelect.fireEvent(new ActionEvent());
         });
         //
         genClassroomsTableNumber.setCellValueFactory(new PropertyValueFactory<>("number"));

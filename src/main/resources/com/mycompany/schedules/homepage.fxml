@@ -13,7 +13,7 @@
 <?import javafx.scene.text.Font?>
 
 
-<VBox styleClass="mainPane" stylesheets="@../../../css/homepage.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.timetables.HomepageController">
+<VBox styleClass="mainPane" stylesheets="@../../../css/homepage.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.schedules.HomepageController">
    <children>
           <VBox alignment="TOP_CENTER" spacing="20.0" VBox.vgrow="ALWAYS">
               <children>

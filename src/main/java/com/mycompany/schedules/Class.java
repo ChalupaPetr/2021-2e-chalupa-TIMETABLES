@@ -1,4 +1,4 @@
-package com.mycompany.timetables;
+package com.mycompany.schedules;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public class Class implements Serializable {
     private final String year;
     private final String name;
     private ArrayList<SubjectGroup> subjectGroups = new ArrayList<>();
-    private transient ArrayList<ArrayList<TimetableHour>> timetable = new ArrayList<>();
+    private transient ArrayList<ArrayList<ScheduleHour>> schedule = new ArrayList<>();
 
     public Class(String year, String name) {
         this.year = year;
@@ -32,16 +32,16 @@ public class Class implements Serializable {
         return subjectGroups;
     }
 
-    public ArrayList<ArrayList<TimetableHour>> getTimetable() {
-        return timetable;
+    public ArrayList<ArrayList<ScheduleHour>> getSchedule() {
+        return schedule;
     }
 
     public void setSubjectGroups(ArrayList<SubjectGroup> subjectGroups) {
         this.subjectGroups = subjectGroups;
     }
 
-    public void setTimetable(ArrayList<ArrayList<TimetableHour>> timetable) {
-        this.timetable = timetable;
+    public void setSchedule(ArrayList<ArrayList<ScheduleHour>> schedule) {
+        this.schedule = schedule;
     }
 
     @Override

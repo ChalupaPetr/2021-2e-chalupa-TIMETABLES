@@ -1,4 +1,4 @@
-package com.mycompany.timetables;
+package com.mycompany.schedules;
 
 import java.io.File;
 import javafx.application.Application;
@@ -32,7 +32,7 @@ public class App extends Application {
         App.scene = new Scene(loadFXML("homepage"), 900, 600);
         stage.setScene(scene);
         stage.getIcons().add(new Image(App.class.getResource("/img/icon.png").toString()));
-        stage.setTitle("TIMETABLES");
+        stage.setTitle("SCHEDULES");
         stage.show();
     }
 

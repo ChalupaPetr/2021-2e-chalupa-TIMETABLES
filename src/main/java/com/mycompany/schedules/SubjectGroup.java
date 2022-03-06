@@ -1,4 +1,4 @@
-package com.mycompany.timetables;
+package com.mycompany.schedules;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
