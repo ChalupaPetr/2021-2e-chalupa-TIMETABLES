@@ -1,6 +1,4 @@
 .mainPane {
-    -fx-min-width: 900px;
-    -fx-min-height: 600px;
     -fx-background-color: #F2F2F2;
 }
 
@@ -23,7 +21,7 @@
 
 ComboBox {
     -fx-cursor: HAND;
-    -fx-pref-width: 150px;
+    -fx-min-width: 100px;
 }
 
 .ttTable {

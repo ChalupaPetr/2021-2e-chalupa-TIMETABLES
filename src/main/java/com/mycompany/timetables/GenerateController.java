@@ -365,7 +365,7 @@ public class GenerateController implements Initializable {
         //
         Classroom crNew = new Classroom(number, name);
         for (Classroom cr : classrooms) {
-            if (cr.toString().equals(crNew.toString())) {
+            if (cr.getName().equals(name) || cr.getNumber().equals(number)) {
                 return;
             }
         }
@@ -456,7 +456,7 @@ public class GenerateController implements Initializable {
         //
         Subject sNew = new Subject(name, color);
         for (Subject s : subjects) {
-            if (s.toString().equals(sNew.toString())) {
+            if (s.getName().equals(name)) {
                 return;
             }
         }

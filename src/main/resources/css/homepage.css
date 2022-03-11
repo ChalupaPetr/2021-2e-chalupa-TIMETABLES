@@ -1,6 +1,4 @@
 .mainPane>VBox {
-    -fx-min-width: 900px;
-    -fx-min-height: 600px;
     -fx-background-color: #F2F2F2;
 }
 

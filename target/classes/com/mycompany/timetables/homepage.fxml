@@ -13,11 +13,11 @@
 <?import javafx.scene.text.Font?>
 
 
-<VBox styleClass="mainPane" stylesheets="@../../../css/homepage.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.timetables.HomepageController">
+<VBox alignment="CENTER" styleClass="mainPane" stylesheets="@../../../css/homepage.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mycompany.timetables.HomepageController">
    <children>
           <VBox alignment="TOP_CENTER" spacing="20.0" VBox.vgrow="ALWAYS">
               <children>
-                  <HBox alignment="TOP_RIGHT" styleClass="langChoooser">
+                  <HBox alignment="TOP_RIGHT" styleClass="langChoooser" VBox.vgrow="NEVER">
                       <children>
                           <Label alignment="CENTER_RIGHT" text="%homepage.langChooser" textAlignment="CENTER">
                               <HBox.margin>

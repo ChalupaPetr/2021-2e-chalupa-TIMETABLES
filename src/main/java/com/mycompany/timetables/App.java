@@ -29,7 +29,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         App.stage = stage;
-        App.scene = new Scene(loadFXML("homepage"), 900, 600);
+        App.scene = new Scene(loadFXML("homepage"), 999, 666);
         stage.setScene(scene);
         stage.getIcons().add(new Image(App.class.getResource("/img/icon.png").toString()));
         stage.setTitle("TIMETABLES");
