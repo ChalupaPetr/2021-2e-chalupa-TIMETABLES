@@ -735,7 +735,8 @@ public class GenerateController implements Initializable {
             PdfWriter.getInstance(pdf, outS);
             pdf.open();
             //
-            final BaseFont baseFont = BaseFont.createFont("src/main/resources/fonts/Arimo.ttf", BaseFont.IDENTITY_H,
+            final BaseFont baseFont = BaseFont.createFont(
+                    "2021-2e-chalupa-generator_rozvrhu/src/main/resources/fonts/Arimo.ttf", BaseFont.IDENTITY_H,
                     BaseFont.EMBEDDED);
             //
             PdfPTable table = new PdfPTable(ttTable.getColumnCount());
